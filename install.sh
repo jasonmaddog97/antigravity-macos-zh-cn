@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_PATH="/Applications/Antigravity.app"
+APP_PATH="${1:-/Applications/Antigravity.app}"
+APP_NAME="$(basename "${APP_PATH}" .app)"
 RESOURCES_DIR="${APP_PATH}/Contents/Resources"
 ASAR_FILE="${RESOURCES_DIR}/app.asar"
 BACKUP_FILE="${RESOURCES_DIR}/app.asar.bak"
@@ -26,8 +27,8 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-if pgrep -x "Antigravity" >/dev/null 2>&1; then
-  echo "❌ 检测到 Antigravity 正在运行，请先完全退出后再执行本脚本。"
+if pgrep -x "${APP_NAME}" >/dev/null 2>&1; then
+  echo "❌ 检测到 ${APP_NAME} 正在运行，请先完全退出后再执行本脚本。"
   exit 1
 fi
 

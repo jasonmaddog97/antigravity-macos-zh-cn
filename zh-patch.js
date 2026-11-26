@@ -18,13 +18,18 @@ function translateText(text) {
   return text;
 }
 
+const electron = (() => {
+  try { return require('electron'); } catch (_) { return null; }
+})();
+const APP_NAME = (electron && electron.app && electron.app.getName && electron.app.getName()) || 'App';
+
 const ROLE_LABELS = {
-  about: '关于 Antigravity',
+  about: `关于 ${APP_NAME}`,
   services: '服务',
-  hide: '隐藏 Antigravity',
+  hide: `隐藏 ${APP_NAME}`,
   hideOthers: '隐藏其他',
   unhide: '全部显示',
-  quit: '退出 Antigravity',
+  quit: `退出 ${APP_NAME}`,
   undo: '撤销',
   redo: '重做',
   cut: '剪切',
@@ -170,14 +175,16 @@ try {
       const inject = () => contents.executeJavaScript(rendererScript).catch(() => {});
       contents.on('dom-ready', inject);
       contents.on('did-finish-load', inject);
-      contents.on('console-message', (_e, _level, message) => {
-        if (typeof message === 'string' && message.startsWith('__ZH_COLLECT__:')) {
-          try {
-            const items = JSON.parse(message.slice('__ZH_COLLECT__:'.length));
-            if (Array.isArray(items)) saveCollected(items);
-          } catch (_) {}
-        }
-      });
+      if (process.env.ZH_COLLECT === '1') {
+        contents.on('console-message', (_e, _level, message) => {
+          if (typeof message === 'string' && message.startsWith('__ZH_COLLECT__:')) {
+            try {
+              const items = JSON.parse(message.slice('__ZH_COLLECT__:'.length));
+              if (Array.isArray(items)) saveCollected(items);
+            } catch (_) {}
+          }
+        });
+      }
     });
   }
 } catch (e) {
